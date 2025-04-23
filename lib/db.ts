@@ -1,8 +1,14 @@
+/**
+ * Database utility functions for the NHL Free Agent Evaluation app
+ * This file centralizes all database connection logic
+ */
 
-
+// Only import mysql on the server side
 let mysql: any = null
 
-
+/**
+ * Load the MySQL module dynamically (server-side only)
+ */
 async function loadMysql() {
   if (typeof window === "undefined") {
     try {
@@ -20,7 +26,10 @@ async function loadMysql() {
 // Create a connection pool to the MySQL database
 let pool: any = null
 
-
+/**
+ * Get a database connection pool
+ * This function ensures we only create one pool for the entire application
+ */
 export async function getDbPool() {
   if (!pool && !mysql) {
     // Try to load MySQL first
@@ -33,11 +42,12 @@ export async function getDbPool() {
 
   if (!pool && mysql) {
     try {
+      // Log the database URL (with password redacted for security)
       const dbUrl = process.env.DATABASE_URL || "No DATABASE_URL found"
       const redactedUrl = dbUrl.replace(/:([^@]*)@/, ":****@")
       console.log(`Connecting to database: ${redactedUrl}`)
 
-     
+      // Create a connection pool with SSL options
       const connectionConfig = {
         uri: process.env.DATABASE_URL,
         waitForConnections: true,

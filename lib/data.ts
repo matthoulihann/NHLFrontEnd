@@ -1,12 +1,16 @@
+// Replace the entire file with this complete version
 import type { Player, PlayerStat, GarData } from "./types"
 import { isClient } from "@/lib/utils"
 import { executeQuery } from "./db"
 
+// Only import mysql on the server side
 let mysql: any = null
 
+// Use a dynamic import for mysql2 to prevent client-side errors
 async function loadMysql() {
   if (typeof window === "undefined") {
     try {
+      // We're on the server - dynamically import mysql2
       mysql = await import("mysql2/promise")
       console.log("MySQL module loaded successfully")
       return true
@@ -18,10 +22,13 @@ async function loadMysql() {
   return false
 }
 
+// Create a connection pool to the MySQL database
 let pool: any = null
 
+// Initialize the connection pool
 async function getPool() {
   if (!pool && !mysql) {
+    // Try to load MySQL first
     const loaded = await loadMysql()
     if (!loaded) {
       console.warn("MySQL could not be loaded, using mock data")
@@ -31,16 +38,19 @@ async function getPool() {
 
   if (!pool && mysql) {
     try {
+      // Log the database URL (with password redacted for security)
       const dbUrl = process.env.DATABASE_URL || "No DATABASE_URL found"
       const redactedUrl = dbUrl.replace(/:([^@]*)@/, ":****@")
       console.log(`Attempting to connect to database: ${redactedUrl}`)
 
+      // For Railway, we need to parse the connection string and add SSL options
       const connectionConfig = {
         uri: process.env.DATABASE_URL,
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
         ssl: {
+          // Changed to false to accept self-signed certificates
           rejectUnauthorized: false,
         },
       }
@@ -48,6 +58,7 @@ async function getPool() {
       pool = mysql.createPool(connectionConfig)
       console.log("MySQL pool created successfully")
 
+      // Test the connection
       pool
         .query("SELECT 1")
         .then(() => {
@@ -63,6 +74,7 @@ async function getPool() {
   return pool
 }
 
+// Function to get all players
 export async function getPlayers(): Promise<Player[]> {
   console.log("getPlayers called, isClient:", isClient())
 
@@ -114,6 +126,7 @@ export async function getPlayers(): Promise<Player[]> {
 
     return (rows as Player[]).map((player) => ({
       ...player,
+      // Ensure numeric values are properly typed
       projectedAav: Number(player.projectedAav),
       projectedTerm: Number(player.projectedTerm),
       projectedGar2526: player.projectedGar2526 ? Number(player.projectedGar2526) : undefined,
@@ -125,10 +138,11 @@ export async function getPlayers(): Promise<Player[]> {
     }))
   } catch (error) {
     console.error("Failed to fetch players:", error)
-    return mockPlayers
+    return mockPlayers // Fallback to mock data
   }
 }
 
+// Function to get player by ID
 export async function getPlayerById(id: number): Promise<Player | null> {
   if (isClient()) {
     console.log(`Client-side: Using mock data for player ID ${id}`)
@@ -194,6 +208,7 @@ export async function getPlayerById(id: number): Promise<Player | null> {
 
     return {
       ...player,
+      // Ensure numeric values are properly typed
       projectedAav: Number(player.projectedAav),
       projectedTerm: Number(player.projectedTerm),
       projectedGar2526: player.projectedGar2526 ? Number(player.projectedGar2526) : undefined,
@@ -206,10 +221,11 @@ export async function getPlayerById(id: number): Promise<Player | null> {
   } catch (error) {
     console.error(`Failed to fetch player with id ${id}:`, error)
     console.log(`Falling back to mock data for player ID ${id}`)
-    return mockPlayers.find((p) => p.id === id) || null
+    return mockPlayers.find((p) => p.id === id) || null // Fallback to mock data
   }
 }
 
+// Function to get players by IDs
 export async function getPlayersByIds(ids: number[]): Promise<Player[]> {
   if (isClient()) {
     return mockPlayers.filter((p) => ids.includes(p.id))
@@ -265,6 +281,7 @@ export async function getPlayersByIds(ids: number[]): Promise<Player[]> {
 
     return (rows as Player[]).map((player) => ({
       ...player,
+      // Ensure numeric values are properly typed
       projectedAav: Number(player.projectedAav),
       projectedTerm: Number(player.projectedTerm),
       projectedGar2526: player.projectedGar2526 ? Number(player.projectedGar2526) : undefined,
@@ -276,10 +293,11 @@ export async function getPlayersByIds(ids: number[]): Promise<Player[]> {
     }))
   } catch (error) {
     console.error("Failed to fetch players:", error)
-    return mockPlayers.filter((p) => ids.includes(p.id))
+    return mockPlayers.filter((p) => ids.includes(p.id)) // Fallback to mock data
   }
 }
 
+// Function to get player GAR data
 export async function getPlayerGarData(playerId: number): Promise<GarData[]> {
   if (isClient()) {
     return mockGarData.filter((d) => d.playerId === playerId)
@@ -321,14 +339,15 @@ export async function getPlayerGarData(playerId: number): Promise<GarData[]> {
 
     return (rows as GarData[]).map((data) => ({
       ...data,
-      gar: Number(data.gar) || 0,
+      gar: Number(data.gar) || 0, // Handle null values
     }))
   } catch (error) {
     console.error(`Failed to fetch GAR data for player with id ${playerId}:`, error)
-    return mockGarData.filter((d) => d.playerId === playerId)
+    return mockGarData.filter((d) => d.playerId === playerId) // Fallback to mock data
   }
 }
 
+// Function to get players GAR data for comparison
 export async function getPlayersGarData(playerIds: number[]): Promise<GarData[]> {
   if (isClient()) {
     return mockGarData.filter((d) => playerIds.includes(d.playerId))
@@ -342,7 +361,7 @@ export async function getPlayersGarData(playerIds: number[]): Promise<GarData[]>
     }
 
     const placeholders = playerIds.map(() => "?").join(",")
-    const allParams = [...playerIds, ...playerIds, ...playerIds]
+    const allParams = [...playerIds, ...playerIds, ...playerIds] // Repeat IDs for each season
 
     const [rows] = await pool.query(
       `
@@ -373,14 +392,15 @@ export async function getPlayersGarData(playerIds: number[]): Promise<GarData[]>
 
     return (rows as GarData[]).map((data) => ({
       ...data,
-      gar: Number(data.gar) || 0,
+      gar: Number(data.gar) || 0, // Handle null values
     }))
   } catch (error) {
     console.error("Failed to fetch players GAR data:", error)
-    return mockGarData.filter((d) => playerIds.includes(d.playerId))
+    return mockGarData.filter((d) => playerIds.includes(d.playerId)) // Fallback to mock data
   }
 }
 
+// Function to get player stats
 export async function getPlayerStats(playerId: number): Promise<PlayerStat[]> {
   console.log(`getPlayerStats called for player ID: ${playerId}, isClient:`, isClient())
 
@@ -398,6 +418,7 @@ export async function getPlayerStats(playerId: number): Promise<PlayerStat[]> {
 
     console.log("Executing query to fetch player stats")
 
+    // First, check if the player exists in the stats table
     const [playerCheck] = await pool.query(
       `SELECT player_id, player_name, position, prev_team FROM stats WHERE player_id = ?`,
       [playerId],
@@ -410,9 +431,10 @@ export async function getPlayerStats(playerId: number): Promise<PlayerStat[]> {
 
     if (Array.isArray(playerCheck) && playerCheck.length === 0) {
       console.warn(`No player found with ID ${playerId} in stats table`)
-      return []
+      return [] // Return empty array instead of mock data
     }
 
+    // Get all player data in a single query to avoid multiple database calls
     const [playerData] = await pool.query(`SELECT * FROM stats WHERE player_id = ?`, [playerId])
 
     if (Array.isArray(playerData) && playerData.length === 0) {
@@ -420,8 +442,10 @@ export async function getPlayerStats(playerId: number): Promise<PlayerStat[]> {
       return []
     }
 
+    // Log the raw player data for debugging
     console.log(`Raw player data for ID ${playerId}:`, JSON.stringify(playerData[0], null, 2))
 
+    // Create stats for each season using the data from the single row
     const player = playerData[0]
     const position = player.position || "Unknown"
     const team = player.prev_team || "Unknown"
@@ -429,8 +453,10 @@ export async function getPlayerStats(playerId: number): Promise<PlayerStat[]> {
 
     console.log(`Processing stats for ${playerName} (${position}) on ${team}`)
 
+    // Create an array of stats for each season
     const stats: PlayerStat[] = []
 
+    // Helper function to check if a season has meaningful data
     const seasonHasData = (seasonSuffix: string) => {
       const hasGoals = player[`goals_${seasonSuffix}`] !== undefined && player[`goals_${seasonSuffix}`] !== null
       const hasAssists = player[`a1_${seasonSuffix}`] !== undefined && player[`a1_${seasonSuffix}`] !== null
@@ -440,13 +466,15 @@ export async function getPlayerStats(playerId: number): Promise<PlayerStat[]> {
       return hasGoals || hasAssists || hasTOI || hasGAR
     }
 
+    // Only add seasons that have data
+    // 2022-23 Season
     if (seasonHasData("22_23")) {
       stats.push({
         playerId: playerId,
         season: "2022-23",
         team: team,
         position: position,
-        gamesPlayed: player.gp_22_23 || 82,
+        gamesPlayed: player.gp_22_23 || 82, // Default to 82 if not specified
         goals: player.goals_22_23 !== undefined ? Number(player.goals_22_23) : undefined,
         assists: player.a1_22_23 !== undefined ? Number(player.a1_22_23) : undefined,
         points:
@@ -463,13 +491,14 @@ export async function getPlayerStats(playerId: number): Promise<PlayerStat[]> {
       })
     }
 
+    // 2023-24 Season
     if (seasonHasData("23_24")) {
       stats.push({
         playerId: playerId,
         season: "2023-24",
         team: team,
         position: position,
-        gamesPlayed: player.gp_23_24 || 82,
+        gamesPlayed: player.gp_23_24 || 82, // Default to 82 if not specified
         goals: player.goals_23_24 !== undefined ? Number(player.goals_23_24) : undefined,
         assists: player.a1_23_24 !== undefined ? Number(player.a1_23_24) : undefined,
         points:
@@ -486,13 +515,14 @@ export async function getPlayerStats(playerId: number): Promise<PlayerStat[]> {
       })
     }
 
+    // 2024-25 Season
     if (seasonHasData("24_25")) {
       stats.push({
         playerId: playerId,
         season: "2024-25",
         team: team,
         position: position,
-        gamesPlayed: player.gp_24_25 || 82,
+        gamesPlayed: player.gp_24_25 || 82, // Default to 82 if not specified
         goals: player.goals_24_25 !== undefined ? Number(player.goals_24_25) : undefined,
         assists: player.a1_24_25 !== undefined ? Number(player.a1_24_25) : undefined,
         points:
@@ -511,6 +541,7 @@ export async function getPlayerStats(playerId: number): Promise<PlayerStat[]> {
 
     console.log(`Created ${stats.length} stat entries for player ID ${playerId}`)
 
+    // If no stats were created, return an empty array instead of mock data
     if (stats.length === 0) {
       console.warn(`No stats created for player ID ${playerId}`)
       return []
@@ -519,14 +550,17 @@ export async function getPlayerStats(playerId: number): Promise<PlayerStat[]> {
     return stats
   } catch (error) {
     console.error(`Failed to fetch stats for player with id ${playerId}:`, error)
+    // Return empty array instead of mock data to make it clear there was an error
     return []
   }
 }
 
+// For backward compatibility with the original code
 export async function getPlants() {
   return []
 }
 
+// Mock data for preview environment
 const mockPlayers: Player[] = [
   {
     id: 1,
@@ -562,15 +596,22 @@ const mockPlayers: Player[] = [
     pointsPerGame: 1.3,
     projectedGar2526: 22.1,
   },
+  // Additional mock players would continue here...
 ]
 
+// Mock GAR data for players
 const mockGarData: GarData[] = [
+  // Player 1 - Connor McDavid
   { playerId: 1, season: "2022-23", gar: 22.8 },
   { playerId: 1, season: "2023-24", gar: 23.5 },
   { playerId: 1, season: "2024-25", gar: 24.5 },
+
+  // Additional mock GAR data would continue here...
 ]
 
+// Mock player stats
 const mockPlayerStats: PlayerStat[] = [
+  // Player 1 - Connor McDavid (2022-23)
   {
     playerId: 1,
     season: "2022-23",
@@ -585,7 +626,7 @@ const mockPlayerStats: PlayerStat[] = [
     powerPlayGoals: 21,
     shortHandedGoals: 1,
     gameWinningGoals: 11,
-    timeOnIce: 1804,
+    timeOnIce: 1804, // 22:00 per game
     giveaways: 62,
     takeaways: 78,
     individualCorsiFor: 1250,
@@ -593,4 +634,6 @@ const mockPlayerStats: PlayerStat[] = [
     goalsAboveReplacement: 22.8,
     winsAboveReplacement: 4.1,
   },
+
+  // Additional mock player stats would continue here...
 ]
