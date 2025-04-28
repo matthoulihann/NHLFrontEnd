@@ -14,6 +14,7 @@ export type Player = {
   pointsPerGame?: number
   savePercentage?: number
   goalsAgainstAverage?: number
+  contractValueScore?: number
 }
 
 export type GarData = {
