@@ -11,7 +11,7 @@ import { ChevronDown, ChevronUp, Search, SlidersHorizontal } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Player } from "@/lib/types"
 
-type SortField = "name" | "age" | "projectedAav" | "projectedTerm" | "valueTier"
+type SortField = "name" | "age" | "projectedAav" | "projectedTerm" | "valueTier" | "contract_value_score"
 type SortDirection = "asc" | "desc"
 
 interface PlayerTableProps {
@@ -32,7 +32,33 @@ export function PlayerTable({ initialPlayers }: PlayerTableProps) {
   const filteredPlayers = players.filter((player) => {
     const matchesSearch = player.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesPosition = positionFilter === "all" || player.position === positionFilter
-    const matchesValue = valueFilter === "all" || player.valueTier === valueFilter
+
+    // Updated value tier filtering to handle both string tiers and numeric scores
+    let matchesValue = true
+    if (valueFilter !== "all") {
+      if (valueFilter === "Bargain" || valueFilter === "Fair Deal" || valueFilter === "Overpay") {
+        matchesValue = player.valueTier === valueFilter
+      } else {
+        const score = player.contract_value_score || 0
+        switch (valueFilter) {
+          case "excellent":
+            matchesValue = score >= 80
+            break
+          case "good":
+            matchesValue = score >= 65 && score < 80
+            break
+          case "fair":
+            matchesValue = score >= 50 && score < 65
+            break
+          case "below-average":
+            matchesValue = score >= 35 && score < 50
+            break
+          case "poor":
+            matchesValue = score < 35
+            break
+        }
+      }
+    }
 
     return matchesSearch && matchesPosition && matchesValue
   })
@@ -47,6 +73,10 @@ export function PlayerTable({ initialPlayers }: PlayerTableProps) {
       return sortDirection === "asc" ? a.projectedAav - b.projectedAav : b.projectedAav - a.projectedAav
     } else if (sortField === "projectedTerm") {
       return sortDirection === "asc" ? a.projectedTerm - b.projectedTerm : b.projectedTerm - a.projectedTerm
+    } else if (sortField === "contract_value_score") {
+      const scoreA = a.contract_value_score || 0
+      const scoreB = b.contract_value_score || 0
+      return sortDirection === "asc" ? scoreA - scoreB : scoreB - scoreA
     } else {
       return sortDirection === "asc" ? a.valueTier.localeCompare(b.valueTier) : b.valueTier.localeCompare(a.valueTier)
     }
@@ -85,6 +115,16 @@ export function PlayerTable({ initialPlayers }: PlayerTableProps) {
       default:
         return <Badge>{valueTier}</Badge>
     }
+  }
+
+  // Helper function to get color class based on contract value score
+  const getScoreColor = (score?: number) => {
+    if (score === undefined || score === null) return "text-gray-500"
+    if (score >= 80) return "text-green-600 font-semibold"
+    if (score >= 65) return "text-green-500"
+    if (score >= 50) return "text-blue-500"
+    if (score >= 35) return "text-orange-500"
+    return "text-red-500"
   }
 
   return (
@@ -141,9 +181,16 @@ export function PlayerTable({ initialPlayers }: PlayerTableProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Value Tiers</SelectItem>
+                {/* Original value tiers */}
                 <SelectItem value="Bargain">Bargain</SelectItem>
                 <SelectItem value="Fair Deal">Fair Deal</SelectItem>
                 <SelectItem value="Overpay">Overpay</SelectItem>
+                {/* New numeric value tiers */}
+                <SelectItem value="excellent">Excellent Value (80-100)</SelectItem>
+                <SelectItem value="good">Good Value (65-79)</SelectItem>
+                <SelectItem value="fair">Fair Value (50-64)</SelectItem>
+                <SelectItem value="below-average">Below Average (35-49)</SelectItem>
+                <SelectItem value="poor">Poor Value (0-34)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -203,6 +250,18 @@ export function PlayerTable({ initialPlayers }: PlayerTableProps) {
                     ))}
                 </div>
               </TableHead>
+              {/* New column for contract value score */}
+              <TableHead className="cursor-pointer" onClick={() => handleSort("contract_value_score")}>
+                <div className="flex items-center">
+                  Value Score
+                  {sortField === "contract_value_score" &&
+                    (sortDirection === "asc" ? (
+                      <ChevronUp className="ml-1 h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    ))}
+                </div>
+              </TableHead>
               <TableHead className="cursor-pointer" onClick={() => handleSort("valueTier")}>
                 <div className="flex items-center">
                   Value Tier
@@ -219,7 +278,7 @@ export function PlayerTable({ initialPlayers }: PlayerTableProps) {
           <TableBody>
             {sortedPlayers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
+                <TableCell colSpan={9} className="h-24 text-center">
                   No players found.
                 </TableCell>
               </TableRow>
@@ -243,6 +302,12 @@ export function PlayerTable({ initialPlayers }: PlayerTableProps) {
                   <TableCell>{player.team}</TableCell>
                   <TableCell>${player.projectedAav.toLocaleString()}M</TableCell>
                   <TableCell>{player.projectedTerm} years</TableCell>
+                  {/* New cell for contract value score */}
+                  <TableCell>
+                    <span className={getScoreColor(player.contract_value_score)}>
+                      {player.contract_value_score !== undefined ? player.contract_value_score : "N/A"}
+                    </span>
+                  </TableCell>
                   <TableCell>{getValueTierBadge(player.valueTier)}</TableCell>
                 </TableRow>
               ))
