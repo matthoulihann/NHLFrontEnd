@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils"
 export function Navbar() {
   const pathname = usePathname()
 
+  // For presentation mode - set to true to hide dashboard link
+  const isPresentationMode = true
+
   return (
     <header className="bg-background border-b">
       <div className="container flex h-16 items-center">
@@ -25,15 +28,17 @@ export function Navbar() {
           >
             Home
           </Link>
-          <Link
-            href="/dashboard"
-            className={cn(
-              "transition-colors hover:text-foreground/80",
-              pathname === "/dashboard" ? "text-foreground" : "text-foreground/60",
-            )}
-          >
-            Dashboard
-          </Link>
+          {!isPresentationMode && (
+            <Link
+              href="/dashboard"
+              className={cn(
+                "transition-colors hover:text-foreground/80",
+                pathname === "/dashboard" ? "text-foreground" : "text-foreground/60",
+              )}
+            >
+              Dashboard
+            </Link>
+          )}
           <Link
             href="/compare"
             className={cn(
