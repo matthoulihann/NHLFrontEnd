@@ -11,7 +11,7 @@ import { ChevronDown, ChevronUp, Search, SlidersHorizontal } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Player } from "@/lib/types"
 
-type SortField = "name" | "age" | "projectedAav" | "projectedTerm" | "valueTier"
+type SortField = "name" | "age" | "projectedAav" | "projectedTerm" | "valueTier" | "contractValueScore"
 type SortDirection = "asc" | "desc"
 
 interface PlayerTableProps {
@@ -47,6 +47,10 @@ export function PlayerTable({ initialPlayers }: PlayerTableProps) {
       return sortDirection === "asc" ? a.projectedAav - b.projectedAav : b.projectedAav - a.projectedAav
     } else if (sortField === "projectedTerm") {
       return sortDirection === "asc" ? a.projectedTerm - b.projectedTerm : b.projectedTerm - a.projectedTerm
+    } else if (sortField === "contractValueScore") {
+      const scoreA = a.contractValueScore ?? 0
+      const scoreB = b.contractValueScore ?? 0
+      return sortDirection === "asc" ? scoreA - scoreB : scoreB - scoreA
     } else {
       return sortDirection === "asc" ? a.valueTier.localeCompare(b.valueTier) : b.valueTier.localeCompare(a.valueTier)
     }
@@ -203,6 +207,17 @@ export function PlayerTable({ initialPlayers }: PlayerTableProps) {
                     ))}
                 </div>
               </TableHead>
+              <TableHead className="cursor-pointer" onClick={() => handleSort("contractValueScore")}>
+                <div className="flex items-center">
+                  Value Score
+                  {sortField === "contractValueScore" &&
+                    (sortDirection === "asc" ? (
+                      <ChevronUp className="ml-1 h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    ))}
+                </div>
+              </TableHead>
               <TableHead className="cursor-pointer" onClick={() => handleSort("valueTier")}>
                 <div className="flex items-center">
                   Value Tier
@@ -243,6 +258,7 @@ export function PlayerTable({ initialPlayers }: PlayerTableProps) {
                   <TableCell>{player.team}</TableCell>
                   <TableCell>${player.projectedAav.toLocaleString()}M</TableCell>
                   <TableCell>{player.projectedTerm} years</TableCell>
+                  <TableCell>{player.contractValueScore?.toFixed(1) || "N/A"}</TableCell>
                   <TableCell>{getValueTierBadge(player.valueTier)}</TableCell>
                 </TableRow>
               ))
