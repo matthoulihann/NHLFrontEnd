@@ -80,12 +80,10 @@ export function PlayerTable({ initialPlayers }: PlayerTableProps) {
 
   const getValueTierBadge = (valueTier: string) => {
     switch (valueTier) {
-      case "Bargain":
-        return <Badge className="bg-green-500 hover:bg-green-600">Bargain</Badge>
-      case "Fair Deal":
-        return <Badge className="bg-blue-500 hover:bg-blue-600">Fair Deal</Badge>
-      case "Overpay":
-        return <Badge className="bg-red-500 hover:bg-red-600">Overpay</Badge>
+      case "Undervalued":
+        return <Badge className="bg-black hover:bg-gray-800">Undervalued</Badge>
+      case "Overvalued":
+        return <Badge className="bg-red-500 hover:bg-red-600">Overvalued</Badge>
       default:
         return <Badge>{valueTier}</Badge>
     }
@@ -145,9 +143,8 @@ export function PlayerTable({ initialPlayers }: PlayerTableProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Value Tiers</SelectItem>
-                <SelectItem value="Bargain">Bargain</SelectItem>
-                <SelectItem value="Fair Deal">Fair Deal</SelectItem>
-                <SelectItem value="Overpay">Overpay</SelectItem>
+                <SelectItem value="Undervalued">Undervalued</SelectItem>
+                <SelectItem value="Overvalued">Overvalued</SelectItem>
               </SelectContent>
             </Select>
           </div>
