@@ -26,10 +26,7 @@ async function loadMysql() {
 // Create a connection pool to the MySQL database
 let pool: any = null
 
-/**
- * Get a database connection pool
- * This function ensures we only create one pool for the entire application
- */
+// Update the getDbPool function to use individual environment variables as fallback
 export async function getDbPool() {
   if (!pool && !mysql) {
     // Try to load MySQL first
@@ -42,23 +39,49 @@ export async function getDbPool() {
 
   if (!pool && mysql) {
     try {
-      // Log the database URL (with password redacted for security)
-      const dbUrl = process.env.DATABASE_URL || "No DATABASE_URL found"
-      const redactedUrl = dbUrl.replace(/:([^@]*)@/, ":****@")
-      console.log(`Connecting to database: ${redactedUrl}`)
+      // First try to use DATABASE_URL if available
+      if (process.env.DATABASE_URL) {
+        const dbUrl = process.env.DATABASE_URL
+        const redactedUrl = dbUrl.replace(/:([^@]*)@/, ":****@")
+        console.log(`Connecting to database using URL: ${redactedUrl}`)
 
-      // Create a connection pool with SSL options
-      const connectionConfig = {
-        uri: process.env.DATABASE_URL,
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0,
-        ssl: {
-          rejectUnauthorized: false, // Accept self-signed certificates
-        },
+        // Create a connection pool with SSL options
+        const connectionConfig = {
+          uri: process.env.DATABASE_URL,
+          waitForConnections: true,
+          connectionLimit: 10,
+          queueLimit: 0,
+          ssl: {
+            rejectUnauthorized: false, // Accept self-signed certificates
+          },
+        }
+
+        pool = mysql.createPool(connectionConfig)
+      }
+      // Fallback to individual connection parameters
+      else if (process.env.DATABASE_HOST && process.env.DATABASE_USER) {
+        console.log(`Connecting to database using individual parameters: ${process.env.DATABASE_HOST}`)
+
+        // Create a connection pool with individual parameters
+        const connectionConfig = {
+          host: process.env.DATABASE_HOST,
+          user: process.env.DATABASE_USER,
+          password: process.env.DATABASE_PASSWORD,
+          database: process.env.DATABASE_NAME,
+          port: process.env.DATABASE_PORT ? Number.parseInt(process.env.DATABASE_PORT) : 3306,
+          waitForConnections: true,
+          connectionLimit: 10,
+          queueLimit: 0,
+          ssl: {
+            rejectUnauthorized: false,
+          },
+        }
+
+        pool = mysql.createPool(connectionConfig)
+      } else {
+        throw new Error("No database connection information available")
       }
 
-      pool = mysql.createPool(connectionConfig)
       console.log("MySQL connection pool created successfully")
 
       // Test the connection
@@ -116,10 +139,10 @@ export async function testConnection() {
 }
 
 // Add this alias for backward compatibility with existing code
-export const getPool = getDbPool;
+export const getPool = getDbPool
 
 export default {
   executeQuery,
   testConnection,
-  getPool,
+  getPool: getDbPool, // Change this to explicitly use getDbPool
 }
