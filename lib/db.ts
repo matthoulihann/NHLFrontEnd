@@ -114,3 +114,12 @@ export async function testConnection() {
     return false
   }
 }
+
+// Add this alias for backward compatibility with existing code
+export const getPool = getDbPool;
+
+export default {
+  executeQuery,
+  testConnection,
+  getPool,
+}
