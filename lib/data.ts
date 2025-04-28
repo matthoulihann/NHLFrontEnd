@@ -96,6 +96,7 @@ export async function getPlayers(): Promise<Player[]> {
         pc.contract_term as projectedTerm,
         pc.value_category as valueTier,
         pc.projected_gar_25_26 as projectedGar2526,
+        pc.contract_value_score as contractValueScore,
         CONCAT('Value per GAR: ', pc.value_per_gar, 'k. ', 
                CASE 
                  WHEN pc.value_category = 'Bargain' THEN 'Player provides excellent value relative to projected cost.'
@@ -135,6 +136,7 @@ export async function getPlayers(): Promise<Player[]> {
       pointsPerGame: player.pointsPerGame ? Number(player.pointsPerGame) : undefined,
       savePercentage: player.savePercentage ? Number(player.savePercentage) : undefined,
       goalsAgainstAverage: player.goalsAgainstAverage ? Number(player.goalsAgainstAverage) : undefined,
+      contractValueScore: player.contractValueScore ? Number(player.contractValueScore) : undefined,
     }))
   } catch (error) {
     console.error("Failed to fetch players:", error)
@@ -170,6 +172,7 @@ export async function getPlayerById(id: number): Promise<Player | null> {
         pc.contract_term as projectedTerm,
         pc.value_category as valueTier,
         pc.projected_gar_25_26 as projectedGar2526,
+        pc.contract_value_score as contractValueScore,
         CONCAT('Value per GAR: ', pc.value_per_gar, 'k. ', 
                CASE 
                  WHEN pc.value_category = 'Bargain' THEN 'Player provides excellent value relative to projected cost.'
@@ -217,6 +220,7 @@ export async function getPlayerById(id: number): Promise<Player | null> {
       pointsPerGame: player.pointsPerGame ? Number(player.pointsPerGame) : undefined,
       savePercentage: player.savePercentage ? Number(player.savePercentage) : undefined,
       goalsAgainstAverage: player.goalsAgainstAverage ? Number(player.goalsAgainstAverage) : undefined,
+      contractValueScore: player.contractValueScore ? Number(player.contractValueScore) : undefined,
     }
   } catch (error) {
     console.error(`Failed to fetch player with id ${id}:`, error)
@@ -252,6 +256,7 @@ export async function getPlayersByIds(ids: number[]): Promise<Player[]> {
         pc.contract_term as projectedTerm,
         pc.value_category as valueTier,
         pc.projected_gar_25_26 as projectedGar2526,
+        pc.contract_value_score as contractValueScore,
         CONCAT('Value per GAR: ', pc.value_per_gar, 'k. ', 
                CASE 
                  WHEN pc.value_category = 'Bargain' THEN 'Player provides excellent value relative to projected cost.'
@@ -290,6 +295,7 @@ export async function getPlayersByIds(ids: number[]): Promise<Player[]> {
       pointsPerGame: player.pointsPerGame ? Number(player.pointsPerGame) : undefined,
       savePercentage: player.savePercentage ? Number(player.savePercentage) : undefined,
       goalsAgainstAverage: player.goalsAgainstAverage ? Number(player.goalsAgainstAverage) : undefined,
+      contractValueScore: player.contractValueScore ? Number(player.contractValueScore) : undefined,
     }))
   } catch (error) {
     console.error("Failed to fetch players:", error)
