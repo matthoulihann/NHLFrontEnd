@@ -66,6 +66,13 @@ export function ComparisonTable({ players }: ComparisonTableProps) {
             ))}
           </TableRow>
 
+          <TableRow>
+            <TableCell className="font-medium">Value Score</TableCell>
+            {players.map((player) => (
+              <TableCell key={player.id}>{player.contractValueScore?.toFixed(1) || "N/A"}</TableCell>
+            ))}
+          </TableRow>
+
           {/* Stats specific to player type */}
           {isGoalie ? (
             <>
