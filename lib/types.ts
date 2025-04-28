@@ -1,4 +1,5 @@
-export type Player = {
+
+export interface Player {
   id: number
   name: string
   age: number
@@ -14,15 +15,11 @@ export type Player = {
   pointsPerGame?: number
   savePercentage?: number
   goalsAgainstAverage?: number
+  projectedGar2526?: number
+  contract_value_score?: number 
 }
 
-export type GarData = {
-  playerId: number
-  season: string
-  gar: number
-}
-
-export type PlayerStat = {
+export interface PlayerStat {
   playerId: number
   season: string
   team: string
@@ -36,25 +33,17 @@ export type PlayerStat = {
   powerPlayGoals?: number
   shortHandedGoals?: number
   gameWinningGoals?: number
-  corsiForePercentage?: number
-  expectedGoals?: number
-  expectedGoalsDifferential?: number
+  timeOnIce?: number
+  giveaways?: number
+  takeaways?: number
   individualCorsiFor?: number
   individualExpectedGoals?: number
   goalsAboveReplacement?: number
   winsAboveReplacement?: number
-  wins?: number
-  losses?: number
-  otLosses?: number
-  savePercentage?: number
-  goalsAgainstAverage?: number
-  shutouts?: number
-  goalsSavedAboveAverage?: number
-  highDangerSavePercentage?: number
-  mediumDangerSavePercentage?: number
-  lowDangerSavePercentage?: number
-  qualityStartPercentage?: number
-  timeOnIce?: number
-  giveaways?: number
-  takeaways?: number
+}
+
+export interface GarData {
+  playerId: number
+  season: string
+  gar: number
 }
