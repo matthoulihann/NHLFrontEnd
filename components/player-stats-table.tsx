@@ -11,7 +11,7 @@ interface PlayerStatsTableProps {
 }
 
 export function PlayerStatsTable({ stats, position }: PlayerStatsTableProps) {
-  const [activeTab, setActiveTab] = useState("requested") // Set "requested" as default
+  const [activeTab, setActiveTab] = useState("requested") // "requested" is our Key Stats tab
 
   if (stats.length === 0) {
     return <div>No stats available</div>
@@ -158,11 +158,8 @@ function SkaterAdvancedStats({ stats }: { stats: PlayerStat[] }) {
         <TableHeader>
           <TableRow>
             <TableHead>Season</TableHead>
-            <TableHead>CF%</TableHead>
             <TableHead>iCF</TableHead>
-            <TableHead>xG</TableHead>
             <TableHead>ixG</TableHead>
-            <TableHead>xG±</TableHead>
             <TableHead>GAR</TableHead>
             <TableHead>WAR</TableHead>
           </TableRow>
@@ -171,11 +168,8 @@ function SkaterAdvancedStats({ stats }: { stats: PlayerStat[] }) {
           {stats.map((stat) => (
             <TableRow key={stat.season}>
               <TableCell className="font-medium">{stat.season}</TableCell>
-              <TableCell>{stat.corsiForePercentage?.toFixed(1)}%</TableCell>
               <TableCell>{stat.individualCorsiFor}</TableCell>
-              <TableCell>{stat.expectedGoals?.toFixed(1)}</TableCell>
               <TableCell>{stat.individualExpectedGoals?.toFixed(1)}</TableCell>
-              <TableCell>{stat.expectedGoalsDifferential?.toFixed(1)}</TableCell>
               <TableCell>{stat.goalsAboveReplacement?.toFixed(1)}</TableCell>
               <TableCell>{stat.winsAboveReplacement?.toFixed(1)}</TableCell>
             </TableRow>
