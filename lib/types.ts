@@ -1,4 +1,4 @@
-
+// Add contract_value_score to the Player interface
 export interface Player {
   id: number
   name: string
@@ -16,7 +16,14 @@ export interface Player {
   savePercentage?: number
   goalsAgainstAverage?: number
   projectedGar2526?: number
-  contract_value_score?: number 
+  contract_value_score?: number // Added this line
+}
+
+// Keep the rest of your types as they are
+export interface GarData {
+  playerId: number
+  season: string
+  gar: number
 }
 
 export interface PlayerStat {
@@ -33,17 +40,25 @@ export interface PlayerStat {
   powerPlayGoals?: number
   shortHandedGoals?: number
   gameWinningGoals?: number
-  timeOnIce?: number
-  giveaways?: number
-  takeaways?: number
+  corsiForePercentage?: number
+  expectedGoals?: number
+  expectedGoalsDifferential?: number
   individualCorsiFor?: number
   individualExpectedGoals?: number
   goalsAboveReplacement?: number
   winsAboveReplacement?: number
-}
-
-export interface GarData {
-  playerId: number
-  season: string
-  gar: number
+  wins?: number
+  losses?: number
+  otLosses?: number
+  savePercentage?: number
+  goalsAgainstAverage?: number
+  shutouts?: number
+  goalsSavedAboveAverage?: number
+  highDangerSavePercentage?: number
+  mediumDangerSavePercentage?: number
+  lowDangerSavePercentage?: number
+  qualityStartPercentage?: number
+  timeOnIce?: number
+  giveaways?: number
+  takeaways?: number
 }
