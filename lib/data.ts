@@ -1,4 +1,4 @@
-// Replace the entire file with this complete version
+
 import type { Player, PlayerStat, GarData } from "./types"
 import { isClient } from "@/lib/utils"
 import { executeQuery } from "./db"
